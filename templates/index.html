@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Price Analysis: AAPL</h1>
+        <div class="plot">
+            <img src="data:image/png;base64,{{ image_data }}" alt="Stock Price Chart">
+        </div>
+    </div>
+</body>
+</html>
