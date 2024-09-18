@@ -7,11 +7,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <form method="POST">
+        <label for="fname">Stock Ticker Symbol: </label>
+        <input type="text" id="fname" name="fname" value="{{ ticker }}">
+        <input type="submit" value="Submit">
+    </form>
+
     <div class="container">
-        <h1>Stock Price Analysis: AAPL</h1>
+        <h1>Stock Price Analysis: {{ ticker }}</h1>
         <div class="plot">
             <img src="data:image/png;base64,{{ image_data }}" alt="Stock Price Chart">
         </div>
-    </div>
-</body>
-</html>
+
+        <!-- Display the trend with conditional styling -->
+        <div class="trend">
+            {% if trend == 'UPTREND' %}
+                <p style="color: green; font-weight: bold;">UPTREND</p>
+            {% else %}
+                <p style="color: red; font-weight: bold;">DOWNTREND</p>
+            {% endif %}
+        </div>
+   

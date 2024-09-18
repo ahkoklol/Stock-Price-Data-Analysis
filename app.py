@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,6 +20,13 @@ def get_stock_data(ticker='MC.PA'):
     stock_data['SMA200'] = stock_data['Close'].rolling(window=200).mean()  # 200-day moving average
     stock_data['SMA50'] = stock_data['Close'].rolling(window=50).mean()    # 50-day moving average
     return stock_data
+
+# Function to determine if it's an uptrend or downtrend
+def determine_trend(stock_data):
+    if stock_data['SMA50'].iloc[-1] > stock_data['SMA200'].iloc[-1]:
+        return "UPTREND"
+    else:
+        return "DOWNTREND"
 
 # Function to plot stock data and return it as an image
 def plot_stock_data(stock_data):
@@ -44,11 +51,19 @@ def plot_stock_data(stock_data):
     return image_data
 
 # Flask route for the main page
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    stock_data = get_stock_data()  # Get stock data
+    ticker = 'MC.PA'  # Default ticker
+    if request.method == 'POST':
+        ticker = request.form.get('fname')
+        if not ticker:
+            ticker = 'MC.PA'
+    
+    stock_data = get_stock_data(ticker)  # Get stock data for the selected ticker
     image_data = plot_stock_data(stock_data)  # Generate plot image
-    return render_template('index.html', image_data=image_data)
+    trend = determine_trend(stock_data)  # Determine trend (UPTREND or DOWNTREND)
+    
+    return render_template('index.html', image_data=image_data, ticker=ticker, trend=trend)
 
 if __name__ == '__main__':
     app.run(debug=True)
