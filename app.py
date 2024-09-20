@@ -1,12 +1,23 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import base64
 from datetime import datetime
+from db import init_db, register_user, login_user, add_to_portfolio, get_portfolio, remove_from_portfolio
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 app = Flask(__name__)
+app.secret_key = SECRET_KEY  # Set a secret key for session management
+
+# Initialize the database
+with app.app_context():
+    init_db()
 
 # Get today's date
 end_date = datetime.now().strftime('%Y-%m-%d')
@@ -64,6 +75,80 @@ def index():
     trend = determine_trend(stock_data)  # Determine trend (UPTREND or DOWNTREND)
     
     return render_template('index.html', image_data=image_data, ticker=ticker, trend=trend)
+
+# Route for user registration
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        if register_user(username, email, password):
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Username or email already exists.', 'danger')
+    return render_template('register.html')
+
+# Route for user login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = login_user(username, password)
+        if user:
+            session['user_id'] = user['id']
+            flash('Login successful!', 'success')
+            return redirect(url_for('portfolio'))
+        else:
+            flash('Invalid credentials. Please try again.', 'danger')
+    return render_template('login.html')
+
+# Route to display the user's portfolio
+@app.route('/portfolio')
+def portfolio():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    portfolio = get_portfolio(user_id)  # Get user's portfolio
+    return render_template('portfolio.html', portfolio=portfolio)
+
+# Route to add a stock to the portfolio
+@app.route('/portfolio/add', methods=['POST'])
+def add_portfolio():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    ticker = request.form.get('ticker')
+    if ticker:
+        add_to_portfolio(user_id, ticker)
+        flash(f'Stock {ticker} added to your portfolio.', 'success')
+
+    return redirect(url_for('portfolio'))
+
+# Route to remove a stock from the portfolio
+@app.route('/portfolio/remove', methods=['POST'])
+def remove_portfolio():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    ticker = request.form.get('ticker')
+    if ticker:
+        remove_from_portfolio(user_id, ticker)
+        flash(f'Stock {ticker} removed from your portfolio.', 'success')
+
+    return redirect(url_for('portfolio'))
+
+# Route to log out
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

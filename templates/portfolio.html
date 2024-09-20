@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>My Portfolio</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Your Stocks</h2>
+        <form method="POST" action="{{ url_for('add_portfolio') }}" class="portfolio-form">
+            <input type="text" name="ticker" placeholder="Add a stock ticker" required>
+            <button type="submit">Add Stock</button>
+        </form>
+        <ul>
+            {% for stock in portfolio %}
+                <li>
+                    {{ stock.ticker }} 
+                    <form method="POST" action="{{ url_for('remove_portfolio') }}" style="display:inline;">
+                        <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                        <button type="submit">Remove</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </main>
+</body>
+</html>

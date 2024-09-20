@@ -7,24 +7,40 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <form method="POST">
-        <label for="fname">Stock Ticker Symbol: </label>
-        <input type="text" id="fname" name="fname" value="{{ ticker }}">
-        <input type="submit" value="Submit">
-    </form>
-
-    <div class="container">
-        <h1>Stock Price Analysis: {{ ticker }}</h1>
-        <div class="plot">
-            <img src="data:image/png;base64,{{ image_data }}" alt="Stock Price Chart">
-        </div>
-
-        <!-- Display the trend with conditional styling -->
-        <div class="trend">
-            {% if trend == 'UPTREND' %}
-                <p style="color: green; font-weight: bold;">UPTREND</p>
+    <header>
+        <h1>Stock Analysis</h1>
+        <nav>
+            {% if session.user_id %}
+                <a href="{{ url_for('portfolio') }}">My Portfolio</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
-                <p style="color: red; font-weight: bold;">DOWNTREND</p>
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
             {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        <form method="POST" class="ticker-form">
+            <label for="fname">Stock Ticker Symbol: </label>
+            <input type="text" id="fname" name="fname" value="{{ ticker }}" required>
+            <input type="submit" value="Submit">
+        </form>
+
+        <div class="container">
+            <h2>Stock Price Analysis: {{ ticker }}</h2>
+            <div class="plot">
+                <img src="data:image/png;base64,{{ image_data }}" alt="Stock Price Chart">
+            </div>
+
+            <div class="trend">
+                {% if trend == 'UPTREND' %}
+                    <p class="uptrend">UPTREND</p>
+                {% else %}
+                    <p class="downtrend">DOWNTREND</p>
+                {% endif %}
+            </div>
         </div>
-   
+    </main>
+</body>
+</html>
