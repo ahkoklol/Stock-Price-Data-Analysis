@@ -24,7 +24,13 @@
         <form method="POST" class="ticker-form">
             <label for="fname">Stock Ticker Symbol: </label>
             <input type="text" id="fname" name="fname" value="{{ ticker }}" required>
+
             <input type="submit" value="Submit">
+        </form>
+
+        <form method="POST">
+            <input type="hidden" name="send_email" value="true">
+            <button type="submit">Send Stock Analysis Email</button>
         </form>
 
         <div class="container">

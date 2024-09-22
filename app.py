@@ -6,6 +6,7 @@ import io
 import base64
 from datetime import datetime
 from db import init_db, register_user, login_user, add_to_portfolio, get_portfolio, remove_from_portfolio
+from flask_mail import Mail, Message
 import os
 from dotenv import load_dotenv
 
@@ -14,6 +15,17 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY  # Set a secret key for session management
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
+# Initialize Flask-Mail
+mail = Mail(app)
 
 # Initialize the database
 with app.app_context():
@@ -24,6 +36,12 @@ end_date = datetime.now().strftime('%Y-%m-%d')
 
 # Start date
 start_date = '2020-01-01'
+
+# Function to send an email
+def send_email():
+    msg = Message("Stock Analysis Update", sender=app.config['MAIL_USERNAME'], recipients=["wayne.ugo.lol@gmail.com"])
+    msg.body = "Here is the latest stock analysis from your platform."
+    mail.send(msg)
 
 # Function to fetch and analyze stock data
 def get_stock_data(ticker='MC.PA'):
@@ -66,6 +84,11 @@ def plot_stock_data(stock_data):
 def index():
     ticker = 'MC.PA'  # Default ticker
     if request.method == 'POST':
+        if 'send_email' in request.form:
+            send_email()  # Call the email sending function
+            flash('Email sent successfully!', 'success')
+            return redirect(url_for('index'))
+        
         ticker = request.form.get('fname')
         if not ticker:
             ticker = 'MC.PA'
