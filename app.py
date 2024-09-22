@@ -43,11 +43,41 @@ def send_email():
     msg.body = "Here is the latest stock analysis from your platform."
     mail.send(msg)
 
+    # Function to send email if there is a crossover and the stock is in the user's portfolio
+def send_email_crossover(direction, ticker): #(user_id, direction, ticker):
+    # Fetch the user's portfolio
+    portfolio = get_portfolio(1) # Hardcoded user_id for now -> user wayne
+    
+    # Check if the ticker is in the portfolio
+    portfolio_tickers = [stock['ticker'] for stock in portfolio]
+    
+    if ticker in portfolio_tickers:
+        subject = f"{ticker}: 50-Day and 200-Day SMA Crossover"
+        if direction == "upward":
+            body = f"There has been an upward crossover of the 50-day SMA over the 200-day SMA for {ticker}."
+        else:
+            body = f"There has been a downward crossover of the 50-day SMA under the 200-day SMA for {ticker}."
+        
+        msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["wayne.ugo.lol@gmail.com"])
+        msg.body = body
+        mail.send(msg)
+        print(f"Email sent for {ticker} crossover ({direction}) in user's portfolio")
+    else:
+        print(f"{ticker} is not in the user's portfolio. No email sent.")
+
 # Function to fetch and analyze stock data
-def get_stock_data(ticker='MC.PA'):
+def get_stock_data(ticker='MC.PA', user_id=None):
     stock_data = yf.download(ticker, start=start_date, end=end_date)
     stock_data['SMA200'] = stock_data['Close'].rolling(window=200).mean()  # 200-day moving average
     stock_data['SMA50'] = stock_data['Close'].rolling(window=50).mean()    # 50-day moving average
+
+    # Check for crossover
+    stock_data['Crossover'] = stock_data['SMA50'] > stock_data['SMA200']
+    if (stock_data['Crossover'].iloc[-2] == False and stock_data['Crossover'].iloc[-1] == True):
+        send_email_crossover(user_id, "upward", ticker)
+    elif (stock_data['Crossover'].iloc[-2] == True and stock_data['Crossover'].iloc[-1] == False):
+        send_email_crossover(user_id, "downward", ticker)
+        
     return stock_data
 
 # Function to determine if it's an uptrend or downtrend
@@ -83,17 +113,19 @@ def plot_stock_data(stock_data):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ticker = 'MC.PA'  # Default ticker
+    
+    # Ensure the user is logged in and get the user_id
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    
     if request.method == 'POST':
-        if 'send_email' in request.form:
-            send_email()  # Call the email sending function
-            flash('Email sent successfully!', 'success')
-            return redirect(url_for('index'))
-        
         ticker = request.form.get('fname')
         if not ticker:
             ticker = 'MC.PA'
     
-    stock_data = get_stock_data(ticker)  # Get stock data for the selected ticker
+    # Pass user_id to get_stock_data to handle portfolio check
+    stock_data = get_stock_data(ticker, user_id=user_id)  # Get stock data for the selected ticker
     image_data = plot_stock_data(stock_data)  # Generate plot image
     trend = determine_trend(stock_data)  # Determine trend (UPTREND or DOWNTREND)
     
