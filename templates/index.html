@@ -13,7 +13,6 @@
             {% if session.user_id %}
                 <a href="{{ url_for('portfolio') }}">My Portfolio</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
-                <!-- <p>User ID: {{ session.user_id }}</p> -->
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
                 <a href="{{ url_for('register') }}">Register</a>
@@ -36,6 +35,19 @@
 
         <div class="container">
             <h2>Stock Price Analysis: {{ ticker }}</h2>
+            <form method="POST" class="timeframe-form">
+                <label for="timeframe">Select Timeframe:</label>
+                <select id="timeframe" name="timeframe">
+                    <option value="1mo" {% if timeframe == '1mo' %}selected{% endif %}>1 Month</option>
+                    <option value="3mo" {% if timeframe == '3mo' %}selected{% endif %}>3 Months</option>
+                    <option value="6mo" {% if timeframe == '6mo' %}selected{% endif %}>6 Months</option>
+                    <option value="1y" {% if timeframe == '1y' %}selected{% endif %}>1 Year</option>
+                    <option value="5y" {% if timeframe == '5y' %}selected{% endif %}>5 Years</option>
+                    <option value="max" {% if timeframe == 'max' %}selected{% endif %}>Max</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+            
             <div class="plot">
                 <img src="data:image/png;base64,{{ image_data }}" alt="Stock Price Chart">
             </div>

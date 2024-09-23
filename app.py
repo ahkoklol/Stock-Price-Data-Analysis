@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from db import init_db, register_user, login_user, add_to_portfolio, get_portfolio, remove_from_portfolio
 from flask_mail import Mail, Message
 import os
@@ -43,7 +43,7 @@ def send_email():
     msg.body = "Here is the latest stock analysis from your platform."
     mail.send(msg)
 
-    # Function to send email if there is a crossover and the stock is in the user's portfolio
+# Function to send email if there is a crossover and the stock is in the user's portfolio
 def send_email_crossover(direction, ticker): #(user_id, direction, ticker):
     # Fetch the user's portfolio
     portfolio = get_portfolio(1) # Hardcoded user_id for now -> user wayne
@@ -65,20 +65,47 @@ def send_email_crossover(direction, ticker): #(user_id, direction, ticker):
     else:
         print(f"{ticker} is not in the user's portfolio. No email sent.")
 
-# Function to fetch and analyze stock data
-def get_stock_data(ticker='MC.PA', user_id=None):
-    stock_data = yf.download(ticker, start=start_date, end=end_date)
+def get_stock_data(ticker='MC.PA', user_id=None, timeframe='1mo'):
+    end_date = datetime.now()
+
+    # Fetch enough data for moving averages
+    if timeframe == '1mo':
+        # For short timeframes, fetch 1 year of data to ensure sufficient data for SMA calculations
+        start_date = end_date - timedelta(weeks=46)
+    elif timeframe == '3mo':
+        start_date = end_date - timedelta(weeks=56)
+    elif timeframe == '6mo':
+        start_date = end_date - timedelta(weeks=66)
+    elif timeframe == '1y':
+        start_date = end_date - timedelta(weeks=94)
+    elif timeframe == '5y':
+        start_date = end_date - timedelta(weeks=5*52)
+    else:
+        start_date = '2020-01-01'  # Default for 'max'
+    
+    # Fetch stock data within the selected timeframe
+    stock_data = yf.download(ticker, start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
+    
+    # Recalculate the moving averages
     stock_data['SMA200'] = stock_data['Close'].rolling(window=200).mean()  # 200-day moving average
     stock_data['SMA50'] = stock_data['Close'].rolling(window=50).mean()    # 50-day moving average
+    
+    # Filter the data to the desired timeframe
+    if timeframe in ['1mo', '3mo', '6mo', '1y']:
+        stock_data = stock_data.loc[end_date - pd.DateOffset(weeks={'1mo': 4, '3mo': 12, '6mo': 24, '1y': 52}[timeframe]):]
 
     # Check for crossover
     stock_data['Crossover'] = stock_data['SMA50'] > stock_data['SMA200']
-    if (stock_data['Crossover'].iloc[-2] == False and stock_data['Crossover'].iloc[-1] == True):
-        send_email_crossover(user_id, "upward", ticker)
-    elif (stock_data['Crossover'].iloc[-2] == True and stock_data['Crossover'].iloc[-1] == False):
-        send_email_crossover(user_id, "downward", ticker)
-        
+    
+    # Send email notifications if there's a crossover
+    if len(stock_data) >= 2:  # Ensure there's enough data to check crossover
+        if (stock_data['Crossover'].iloc[-2] == False and stock_data['Crossover'].iloc[-1] == True):
+            send_email_crossover(user_id, "upward", ticker)
+        elif (stock_data['Crossover'].iloc[-2] == True and stock_data['Crossover'].iloc[-1] == False):
+            send_email_crossover(user_id, "downward", ticker)
+
     return stock_data
+
 
 # Function to determine if it's an uptrend or downtrend
 def determine_trend(stock_data):
@@ -109,27 +136,35 @@ def plot_stock_data(stock_data):
 
     return image_data
 
-# Flask route for the main page
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ticker = 'MC.PA'  # Default ticker
-    
-    # Ensure the user is logged in and get the user_id
+    timeframe = '1mo'  # Default timeframe
+
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
     
     if request.method == 'POST':
-        ticker = request.form.get('fname')
-        if not ticker:
-            ticker = 'MC.PA'
+        if request.form.get('fname'):
+            ticker = request.form.get('fname')
+        if request.form.get('timeframe'):
+            timeframe = request.form.get('timeframe')
+        if request.form.get('send_email'):
+            # Send the stock analysis email
+            send_email()  # Adjust as needed to fetch relevant stock data
+            flash('Email sent with the latest stock analysis!', 'success')
+            return redirect(url_for('index'))  # Redirect to avoid resending on refresh
     
-    # Pass user_id to get_stock_data to handle portfolio check
-    stock_data = get_stock_data(ticker, user_id=user_id)  # Get stock data for the selected ticker
-    image_data = plot_stock_data(stock_data)  # Generate plot image
-    trend = determine_trend(stock_data)  # Determine trend (UPTREND or DOWNTREND)
+    # Fetch stock data for the selected ticker and timeframe
+    stock_data = get_stock_data(ticker, user_id=user_id, timeframe=timeframe)
+    image_data = plot_stock_data(stock_data)
+    trend = determine_trend(stock_data)
     
-    return render_template('index.html', image_data=image_data, ticker=ticker, trend=trend)
+    return render_template('index.html', image_data=image_data, ticker=ticker, trend=trend, timeframe=timeframe)
+
+
 
 # Route for user registration
 @app.route('/register', methods=['GET', 'POST'])
