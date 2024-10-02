@@ -1,93 +1,250 @@
+/* General settings */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
+    background-color: #1b1e2b;
+    color: #ffffff;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    font-size: 18px;
 }
 
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
+    background-color: #242635;
+    padding: 20px;
     text-align: center;
+    color: #ffffff;
+    font-size: 18px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+header h1 {
+    font-size: 32px;
+    letter-spacing: 2px;
+    font-weight: bold;
 }
 
 nav {
-    margin: 10px 0;
+    margin-top: 50px;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
 nav a {
-    color: #fff;
+    color: #ffffff;
     margin: 0 15px;
     text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #33384c;
+    transition: background-color 0.3s ease;
+}
+
+nav a:hover {
+    background-color: #4b5164;
 }
 
 main {
-    padding: 20px;
-    max-width: 800px;
-    margin: auto;
-}
-
-.container {
-    margin: 20px 0;
-}
-
-.ticker-form,
-.auth-form,
-.portfolio-form {
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+}
+
+/* Container */
+.container {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 2 colonnes */
+    gap: 40px;
+    width: 80%;
+    max-width: 1200px;
+}
+
+/* Container Styling */
+.ticker-form {
+    background-color: #33384c;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 300px; /* Largeur compacte */
+    margin: auto; /* Centré horizontalement */
+    display: flex;
+    flex-direction: column; /* Empiler les éléments */
+    align-items: center;
     margin-bottom: 20px;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.ticker-form label {
+    margin-bottom: 10px; /* Espacement entre le label et le champ de texte */
+    font-size: 16px;
+}
+
+.ticker-form input[type="text"] {
     padding: 10px;
-    margin: 10px 0;
-    width: 100%;
-    border: 1px solid #ccc;
+    margin-bottom: 20px; /* Espacement entre le champ de texte et le bouton */
+    width: 100%; /* Le champ de texte prend toute la largeur du formulaire */
+    border: none;
     border-radius: 5px;
+    background-color: #1e2130;
+    color: #ffffff;
+    text-align: center; /* Centrer le texte */
+}
+
+/* Bouton Submit Styling */
+.ticker-form input[type="submit"] {
+    background-color: #4b9780; /* Couleur verte spécifique */
+    color: white;
+    padding: 12px 40px; /* Padding pour effet pillule */
+    border: none;
+    border-radius: 50px; /* Forme arrondie "pillule" */
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px; /* Ajustement de la taille du texte */
+    text-align: none;
+    transition: background-color 0.3s ease;
+}
+
+.ticker-form input[type="submit"]:hover {
+    background-color: #417e6e; /* Couleur plus sombre au survol */
 }
 
 button {
-    padding: 10px;
     background-color: #5cb85c;
     color: white;
+    padding: 12px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
+    width: 150px; /* Largeur du bouton */
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
     background-color: #4cae4c;
 }
 
+form .submit {
+    margin-top: 10px;
+}
+
+button.red {
+    background-color: #d9534f;
+    margin-left: 10px;
+}
+
+button.red:hover {
+    background-color: #c9302c;
+}
+
+h2 {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Stock Price Analysis section */
 .plot {
+    grid-column: 1 / 2; /* Colonne du graphique */
+    background-color: #33384c;
+    padding: 20px;
+    border-radius: 10px;
     text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.plot img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+/* Select Timeframe and Trend */
+#timeframe-select {
+    grid-column: 2 / 3; /* Deuxième colonne */
+    background-color: #33384c;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.select-box {
+    margin-bottom: 20px;
 }
 
 .trend {
+    color: #ff3d00;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 20px;
 }
 
+table th, table td {
+    padding: 12px;
+    border-bottom: 1px solid #444;
+    text-align: center;
+    color: #bfbfbf;
+}
+
+table th {
+    background-color: #2e2f3e;
+}
+
+table tr:hover {
+    background-color: #3b3f51;
+}
+
+/* Style spécifique pour le bouton "Send Stock Analysis Email" */
+button.email {
+    background-color: #a23d57; /* Couleur rouge spécifique */
+    color: white;
+    padding: 10px; /* Augmenter le padding horizontal pour un bouton plus long */
+    border: none;
+    border-radius: 50px; /* Bord arrondi pour effet "pill" */
+    cursor: pointer;
+    font-weight: lighter;
+    font-size: 18px; /* Taille du texte ajustée */
+    text-align: center;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+    width: 300px; /* Largeur définie pour un effet plus allongé */
+    margin-bottom: 40px;
+}
+
+button.email:hover {
+    background-color: #8b314a; /* Couleur plus sombre au survol */
+}
+
+
+button:hover {
+    background-color: #417e6e; /* Couleur plus foncée au survol */
+}
+
+button.submit {
+    background-color: #5cb85c;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+}
+
+button.submit:hover {
+    background-color: #4cae4c;
+}
+
 .uptrend {
-    color: green;
+    color: #00e676;
+    font-size: 24px;
     font-weight: bold;
-}
-
-.downtrend {
-    color: red;
-    font-weight: bold;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
-    margin: 5px 0;
-    display: flex;
-    justify-content: space-between;
 }

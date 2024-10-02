@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <header>
-        <h1>Stock Analysis</h1>
+        <h1>STOCK ANALYSIS</h1>
         <nav>
             {% if session.user_id %}
                 <a href="{{ url_for('portfolio') }}">My Portfolio</a>
@@ -25,12 +25,12 @@
             <label for="fname">Stock Ticker Symbol: </label>
             <input type="text" id="fname" name="fname" value="{{ ticker }}" required>
 
-            <input type="submit" value="Submit">
+            <input type="submit" value="SUBMIT">
         </form>
 
         <form method="POST">
             <input type="hidden" name="send_email" value="true">
-            <button type="submit">Send Stock Analysis Email</button>
+            <button class="email">Send Stock Analysis Email</button>
         </form>
 
         <div class="container">
